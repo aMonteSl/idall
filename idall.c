@@ -4,66 +4,69 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-void executeId(int argc, char** argv){
-    int i;
-    int pidchild;
+void
+executeId(int argc, char **argv)
+{
+	int i;
+	int pidchild;
 
+	for (i = 0; i < argc; i++) {
+		switch (pidchild = fork()) {
+		case -1:
+			err(EXIT_FAILURE, "fork failed");
+			break;
 
-    for (i = 0; i < argc; i++)  {
-        switch (pidchild = fork())
-        {
-        case -1:
-            err(EXIT_FAILURE, "fork failed");
-            break;
+		case 0:
+			execl("/usr/bin/id", "id", argv[i], NULL);
+			err(EXIT_FAILURE, "can`t exec id");
+			break;
+		}
 
-        case 0:
-            execl("/usr/bin/id", "id", argv[i], NULL);
-            err(EXIT_FAILURE, "can`t exec id");
-            break;
-        }
-
-    }
-
+	}
 
 }
 
-int waitChilds(int numberchilds){
-    int sts;
-    int pidwait;
+int
+waitChilds(int numberchilds)
+{
+	int sts;
+	int pidwait;
 
-    do {
-        pidwait = wait(&sts);
-        
-        if (pidwait != -1){
-            numberchilds--;
-            
-            if (WIFEXITED(sts) && WEXITSTATUS(sts) != 0){
-                return -1;
-            }
-        }
+	do {
+		pidwait = wait(&sts);
 
-    } while (numberchilds > 0);
+		if (pidwait != -1) {
+			numberchilds--;
 
-    return 0;
+			if (WIFEXITED(sts) && WEXITSTATUS(sts) != 0) {
+				return -1;
+			}
+		}
+
+	} while (numberchilds > 0);
+
+	return 0;
 }
 
-int main(int argc, char* argv[]){
-    int err;
+int
+main(int argc, char *argv[])
+{
+	int err;
 
-    argc--;
-    argv++;
+	argc--;
+	argv++;
 
-    if (argc < 1){
-        fprintf(stderr, "usage: idall user [user]...\n");
-        exit(EXIT_FAILURE);
-    }
+	if (argc < 1) {
+		fprintf(stderr, "usage: idall user [user]...\n");
+		exit(EXIT_FAILURE);
+	}
 
-    executeId(argc, argv);
-    err = waitChilds(argc);
+	executeId(argc, argv);
+	err = waitChilds(argc);
 
-    if (err){
-        exit(EXIT_FAILURE);
-    }
-    
-    exit(EXIT_SUCCESS);
+	if (err) {
+		exit(EXIT_FAILURE);
+	}
+
+	exit(EXIT_SUCCESS);
 }
