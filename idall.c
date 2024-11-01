@@ -4,8 +4,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-
-
 void executeId(int argc, char** argv){
     int i;
     int pidchild;
@@ -21,6 +19,7 @@ void executeId(int argc, char** argv){
         case 0:
             execl("/usr/bin/id", "id", argv[i], NULL);
             err(EXIT_FAILURE, "can`t exec id");
+            break;
         }
 
     }
@@ -42,8 +41,8 @@ int waitChilds(int numberchilds){
                 return -1;
             }
         }
-        
-    } while (numberchilds > 0 && pidwait != -1);
+
+    } while (numberchilds > 0);
 
     return 0;
 }
